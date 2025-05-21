@@ -7,6 +7,14 @@ public class InventoryUI : MonoBehaviour
 {
     [SerializeField] private InfiniteScroll _infiniteScroll;
 
+    [Header("장비 슬롯")]
+    [SerializeField] private EquippedItemSlot _weaponSlot;
+    [SerializeField] private EquippedItemSlot _glovesSlot;
+    [SerializeField] private EquippedItemSlot _accessarySlot;
+    [SerializeField] private EquippedItemSlot _shieldSlot;
+    [SerializeField] private EquippedItemSlot _chestArmorSlot;
+    [SerializeField] private EquippedItemSlot _bootsSlot;
+
     private InventoryService _service;
 
     private void Awake()
@@ -30,17 +38,58 @@ public class InventoryUI : MonoBehaviour
         _service = new InventoryService(
             new TestInventoryItemRepository(testUserData),
             new ItemRepository());
+
+        _service.Equip(testUserData[0].SerialNumber);
+        _service.Equip(testUserData[2].SerialNumber);
+        _service.Equip(testUserData[1].SerialNumber);
     }
 
     void Start()
     {
-        var userItems = _service.Items.OrderBy(userItem =>
+        foreach (var equippedItem in _service.EquippedItems)
         {
-            var item = _service.GetItemById(userItem.Id);
-            return item.Grade;
-        });
+            var item = _service.GetItemById(equippedItem.Id);
+            EquippedItemSlotData slotData = new EquippedItemSlotData()
+            {
+                GradeSprite = Resources.Load<Sprite>($"Textures/{item.GradeSpritePath}"),
+                ItemIconSprite = Resources.Load<Sprite>($"Textures/{item.IconSpritePath}"),
+            };
 
-        foreach (var userItem in userItems)
+            switch (item.Type)
+            {
+                case ItemType.Weapon:
+                    _weaponSlot.SetData(slotData);
+                    break;
+                case ItemType.Gloves:
+                    _glovesSlot.SetData(slotData);
+                    break;
+                case ItemType.Accessory:
+                    _accessarySlot.SetData(slotData);
+                    break;
+                case ItemType.Shield:
+                    _shieldSlot.SetData(slotData);
+                    break;
+                case ItemType.ChestArmor:
+                    _chestArmorSlot.SetData(slotData);
+                    break;
+                case ItemType.Boots:
+                    _bootsSlot.SetData(slotData);
+                    break;
+                default:
+                    Debug.LogError($"Unknown item type: {item.Type}");
+                    break;
+            }
+        }
+
+        var orderedUserItems = _service.Items.
+               Where(userItem => userItem.IsEquipped == false).
+               OrderByDescending(userItem =>
+                {
+                    var item = _service.GetItemById(userItem.Id);
+                    return item.Grade;
+                });
+
+        foreach (var userItem in orderedUserItems)
         {
             var item = _service.GetItemById(userItem.Id);
 
