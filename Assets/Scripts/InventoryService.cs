@@ -1,13 +1,18 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 public class InventoryService
 {
-    private ItemRepository _itemRepository;
+    private IUserInventoryItemRepository _userInventoryItemRepo;
+    private IItemRepository _itemRepo;
 
-    public InventoryService(ItemRepository itemRepository)
+    public InventoryService(IUserInventoryItemRepository repo, IItemRepository itemRepo)
     {
-        _itemRepository = itemRepository;
+        _userInventoryItemRepo = repo;
+        _itemRepo = itemRepo;
     }
 
-    public List<Item> Items => _itemRepository.GetAllItem();
+    public ReadOnlyCollection<UserInventoryItem> Items => _userInventoryItemRepo.GetAllItems();
+
+    public Item GetItemById(int itemId) => _itemRepo.GetItemById(itemId);
 }

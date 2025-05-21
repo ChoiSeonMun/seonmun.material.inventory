@@ -23,7 +23,12 @@ class ItemModelWrapper
     public ItemModel[] data;
 }
 
-public class ItemRepository
+public interface IItemRepository
+{
+    Item GetItemById(int id);
+}
+
+public class ItemRepository : IItemRepository
 {
     private Dictionary<int, ItemModel> _itemTable = new();
 
@@ -40,18 +45,6 @@ public class ItemRepository
         }
            
         return new Item(model.item_id, model.item_name, model.attack_power, model.defense);
-    }
-
-
-    public List<Item> GetAllItem()
-    {
-        var list = new List<Item>();
-        foreach (var model in _itemTable.Values)
-        {
-            list.Add(new Item(model.item_id, model.item_name, model.attack_power, model.defense));
-        }
-
-        return list;
     }
 
     private void LoadItemsFromJson()
